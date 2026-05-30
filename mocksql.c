@@ -7,7 +7,7 @@ void CVT_assert(int rc) {
 }
 
 /* ============================================================
-** 1. Bounded abstract heap for one concrete verification witness.
+** 1. Bounded mock of heap for one concrete verification witness.
 **
 ** We never store real bytes. For a small fixed set of allocation ids we
 ** remember only allocation size and liveness. A Pointer is a fat pointer
