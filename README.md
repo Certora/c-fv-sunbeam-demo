@@ -3,7 +3,7 @@ This is a small proof-of-concept showing how to use Certora's Sunbeam prover on 
 
 This repository contains a bounded Wasm witness model for the `concat_ws` overflow mechanism behind [CVE-2025-3277](https://nvd.nist.gov/vuln/detail/CVE-2025-3277).
 
-It demonstrates that, for one concrete witness in this model, the buggy version violates and the fixed version verifies. It is not intended as a universal proof over all SQLite inputs. Instead, this provides evidence that the approach could be extended to broader verification with additional modeling and engineering effort.
+It demonstrates that, for one concrete witness in this model, the buggy version violates and the fixed version verifies. It is not intended as a universal proof over all SQLite inputs but it provides evidence that the approach could be extended to broader verification with additional modeling and engineering effort.
 
 To that end,
 we developed a simplified model of the heap, using AI, against which the function `concatFuncCore` is written. 
@@ -28,11 +28,11 @@ certoraSorobanProver sunbeam.conf
 
 
 ### Additional Notes
-The current `mocksql.c` harness is a bounded verification model, not a full model of SQLite's runtime.
+The current `mocksql.c` harness is a bounded verification model.
 
 - The proof target is a single concrete witness with `argc = 3`, `nSep = 2147483647`, and three 1-byte values.
 - The heap model tracks allocation size and liveness, but it is intentionally small and seeded by the verifier harness before `run_case`.
-- The fake SQLite layer uses shadow state for exactly three argv slots, three values, and one result context.
+- The mocked version of the SQLite layer uses shadow state for exactly three argv slots, three values, and one result context.
 - The result "buggy version violates, fixed version verifies" should be read as a witness-level proof of the CVE mechanism in this model, not as a universal proof over all possible inputs.
 
 The model is split into three layers:
@@ -52,7 +52,7 @@ Object ids are used as follows:
 - `5`, `6`, `7`: value records
 - `8+`: dynamic allocations returned by `sqlite3_malloc64`
 
-`HEAP_MAX = 10` is a harness bound, not a claim about SQLite in general.
+`HEAP_MAX = 10` is a harness bound.
 
 This model is designed to preserve the parts of the program relevant to the CVE witness:
 
@@ -64,12 +64,10 @@ This model is designed to preserve the parts of the program relevant to the CVE 
 
 It does not attempt to model:
 
-- arbitrary SQLite runtime behavior
+- arbitrary runtime behavior
 - general byte-level memory contents
 - all possible heap interactions
 - all possible input values
-
-So the claim is intentionally narrow: this repository demonstrates that, for one concrete witness in this bounded model, the buggy version violates and the fixed version verifies.
 
 
 #### AI Acknowledgement
