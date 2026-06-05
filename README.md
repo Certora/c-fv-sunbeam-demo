@@ -1,14 +1,14 @@
 ### Overview
-This is a small proof-of-concept showing how to use Certora's Sunbeam prover on Wasm generated from C.
+This is a small proof-of-concept showing how to use Certora's Sunbeam prover on C.
 
-This repository contains a bounded Wasm witness model for the `concat_ws` overflow mechanism behind [CVE-2025-3277](https://nvd.nist.gov/vuln/detail/CVE-2025-3277).
+This repository contains a bounded witness model for the `concat_ws` overflow mechanism behind [CVE-2025-3277](https://nvd.nist.gov/vuln/detail/CVE-2025-3277).
 
-It demonstrates that, for one concrete witness in this model, the buggy version violates and the fixed version verifies. It is not intended as a universal proof over all SQLite inputs but it provides evidence that the approach could be extended to broader verification with additional modeling and engineering effort.
+It demonstrates that, for one concrete witness in this model, the buggy version violates and the fixed version verifies. It provides evidence that the approach could be extended to broader verification with additional modeling and engineering effort.
 
 To that end,
-we developed a simplified model of the heap, using AI, against which the function `concatFuncCore` is written. 
+we developed a simplified model of the heap against which the function `concatFuncCore` is written. 
 
-The bug is on line 222: `n += (argc-1)*nSep;`. If you compile and verify this version, the tool will show a violation, which will manifest as a trap (`unreachable` in wasm) which Sunbeam will treat as an `assert(false).`
+The bug is on line 222: `n += (argc-1)*nSep;`. If you compile and verify this version, the tool will show a violation, which will manifest as a an `unreachable` instruction which Sunbeam will treat as an `assert(false).`
 
 If you fix this line of code to be this: `n += (argc-1)*(i64)nSep;` (commented out in the code),
 then the verification will succeed.
@@ -16,12 +16,12 @@ then the verification will succeed.
 
 
 ### How to run
-Compile the `mocksql.c` file to generate wasm like so:
+Compile the three C files like so:
 ```
-clang --target=wasm32 -O0 -mbulk-memory -nostdlib  -Wl,--export-all -Wl,--no-entry   mocksql.c -o concat_mock.wasm
+clang --target=wasm32 -O0 -mbulk-memory -nostdlib -Wl,--export-all -Wl,--no-entry mocksql.c mock_model.c fv_harness.c -o concat_mock.wasm
 ```
 
-Then run Certora's Sunbeam verifier for wasm like so (assuming it is [installed](https://docs.certora.com/en/latest/docs/sunbeam/installation.html)):
+Then run Certora's Sunbeam verifier like so (assuming it is [installed](https://docs.certora.com/en/latest/docs/sunbeam/installation.html)):
 ```
 certoraSorobanProver sunbeam.conf
 ```
